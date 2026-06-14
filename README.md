@@ -43,13 +43,13 @@ India-AI-Watch/
 
 ## Tech stack
 
-| Layer | Tool | Cost |
-|---|---|---|
-| Frontend | Next.js 16 + Tailwind + shadcn/ui | Free (Vercel) |
-| Database | Supabase (PostgreSQL) | Free tier |
-| Document AI | DeepSeek-R1 via Groq | Free tier |
-| Scraping | Python + GitHub Actions | Free |
-| Newsletter | Resend | Free tier |
+| Layer       | Tool                              | Cost          |
+| ----------- | --------------------------------- | ------------- |
+| Frontend    | Next.js 16 + Tailwind + shadcn/ui | Free (Vercel) |
+| Database    | Supabase (PostgreSQL)             | Free tier     |
+| Document AI | DeepSeek-R1 via Groq              | Free tier     |
+| Scraping    | Python + GitHub Actions           | Free          |
+| Newsletter  | Resend                            | Free tier     |
 
 **Total monthly infra cost: $0**
 
@@ -100,9 +100,10 @@ cd web && npm run dev
 
 ## Data sources
 
-All data is sourced from public documents. See [/methodology](https://indiaaiwatch.in/methodology) for the full list of portals, how we score each status, and how we handle RTI non-responses.
+All data is sourced from public documents. See `/methodology` on the live site for the full list of portals, how we score each status, and how we handle RTI non-responses.
 
 Primary sources for Karnataka:
+
 - Government of Karnataka portal
 - Karnataka Legislative Assembly (kla.neva.gov.in)
 - GeM procurement portal
@@ -122,7 +123,7 @@ Want to run this for Telangana, Kerala, or Maharashtra?
 4. Update scraping targets in `scrapers/` for your state's government portals
 5. Deploy to Vercel
 
-A step-by-step guide is at [/fork](https://indiaaiwatch.in/fork) *(coming soon)*.
+A step-by-step guide will be at `/fork` on the live site *(coming soon)*.
 
 ---
 
@@ -130,11 +131,10 @@ A step-by-step guide is at [/fork](https://indiaaiwatch.in/fork) *(coming soon)*
 
 Found a broken link, wrong status, or missing promise? [Open an issue](https://github.com/archithaa/India-AI-Watch/issues) — we review and update within 7 days with a public change log entry.
 
-Journalists and researchers: the full dataset is available at [/data](https://indiaaiwatch.in/data) under CC BY 4.0 via the open API — no auth required.
+Journalists and researchers: the full dataset will be available at `/data` on the live site under CC BY 4.0 via the open API — no auth required.
 
 ---
 
 ## License
 
-Code: MIT  
 Made in Bengaluru · Est. June 2026
