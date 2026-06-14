@@ -70,19 +70,16 @@ RSS_FEEDS = [
 ]
 
 # ─── Keyword filters ──────────────────────────────────────────────────────────
-KARNATAKA_KEYWORDS = ["karnataka", "bengaluru", "bangalore", "siddaramaiah", "shivakumar"]
-AI_KEYWORDS = [
-    "artificial intelligence", " ai ", "machine learning", "deep learning",
-    "generative ai", "large language model", "llm", "chatgpt", "centre for applied ai",
-    "it policy", "tech policy", "digital", "startup", "edtech", "govtech",
+# Only filter for Karnataka/Bengaluru mentions — Groq handles relevance judgement.
+KARNATAKA_KEYWORDS = [
+    "karnataka", "bengaluru", "bangalore", "siddaramaiah", "shivakumar",
+    "itbt", "k-tech", "nasscom karnataka", "iit bangalore", "iimb",
 ]
 
 
-def is_relevant(title: str, summary: str) -> bool:
+def mentions_karnataka(title: str, summary: str) -> bool:
     text = (title + " " + summary).lower()
-    has_karnataka = any(k in text for k in KARNATAKA_KEYWORDS)
-    has_ai = any(k in text for k in AI_KEYWORDS)
-    return has_karnataka and has_ai
+    return any(k in text for k in KARNATAKA_KEYWORDS)
 
 
 def parse_date(entry) -> str:
@@ -101,26 +98,34 @@ def already_exists(db, url: str) -> bool:
 
 
 def match_promise_with_groq(promises: list[dict], article_title: str, article_summary: str) -> Optional[str]:
-    """Use Llama 3.1 8B (fast, free) to find which promise an article relates to."""
+    """
+    Use Llama 3.1 8B to decide:
+    1. Is this article relevant to Karnataka AI/tech policy at all?
+    2. If yes, which tracked promise does it relate to?
+    Returns a promise ID or None.
+    """
     if not GROQ_AVAILABLE or not GROQ_API_KEY:
         return None
 
     client = Groq(api_key=GROQ_API_KEY)
     promise_list = "\n".join(
-        f"{i+1}. [{p['id']}] {p['text'][:120]}" for i, p in enumerate(promises)
+        f"[{p['id']}] {p['text'][:120]}" for p in promises
     )
 
-    prompt = f"""You are matching a news article to a list of tracked government promises.
+    prompt = f"""You are an AI policy analyst reviewing news articles about Karnataka, India.
 
 Article title: {article_title}
-Article summary: {article_summary[:400]}
+Article summary: {article_summary[:500]}
 
-Tracked promises:
+Tracked Karnataka government AI promises:
 {promise_list}
 
-Which promise number does this article most directly relate to?
-Reply with ONLY the promise ID (a UUID) if there is a clear match, or the word NONE if no match.
-Do not explain."""
+Task: Does this article provide evidence about any of the above promises — such as progress, delays, budget allocation, procurement, or contradictions?
+
+If yes: reply with ONLY the promise ID (UUID) of the most relevant promise.
+If no: reply with ONLY the word NONE.
+
+Do not explain. One word or UUID only."""
 
     try:
         response = client.chat.completions.create(
@@ -132,7 +137,6 @@ Do not explain."""
         result = response.choices[0].message.content.strip()
         if result == "NONE" or len(result) < 10:
             return None
-        # Validate it looks like a UUID from our list
         known_ids = {p["id"] for p in promises}
         return result if result in known_ids else None
     except Exception as e:
@@ -189,20 +193,20 @@ def run():
             if not url or not title:
                 continue
 
-            if not is_relevant(title, summary):
+            if not mentions_karnataka(title, summary):
                 skipped_irrelevant += 1
                 continue
 
-            print(f"  RELEVANT: {title[:80]}")
+            print(f"  Karnataka mention — sending to Groq: {title[:70]}")
 
             if already_exists(db, url):
                 skipped_duplicate += 1
                 print(f"    → duplicate, skipped")
                 continue
 
-            # Try Groq first, fall back to keyword
+            # Groq decides relevance + promise match; keyword is fallback if Groq unavailable
             promise_id = match_promise_with_groq(promises, title, summary)
-            if not promise_id:
+            if not promise_id and not GROQ_API_KEY:
                 promise_id = match_promise_keyword(promises, title, summary)
 
             if not promise_id:
