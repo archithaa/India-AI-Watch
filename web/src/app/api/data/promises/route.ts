@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
   if (format === 'csv') {
     const headers = ['slug', 'state', 'category', 'status', 'amount_inr', 'target_date', 'last_verified_at', 'text', 'ai_summary']
     const rows = (data ?? []).map((p) => {
-      const s = p.states as { name: string; code: string } | null
+      const s = p.states as unknown as { name: string; code: string } | null
       return [
         p.slug ?? '',
         s?.code ?? '',
