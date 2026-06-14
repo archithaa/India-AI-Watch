@@ -32,7 +32,16 @@ export default async function KarnatakaPage() {
           Karnataka AI Policy Tracker
         </h1>
         <p className="mt-2 text-slate-500 text-sm">
-          CM: {state.current_cm} · Capital: {state.capital} ·{" "}
+          CM:{" "}
+          <a
+            href="https://cm.karnataka.gov.in/en"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-slate-700"
+          >
+            {state.current_cm}
+          </a>{" "}
+          · Capital: {state.capital} ·{" "}
           <span className="text-slate-400">Last updated June 2026</span>
         </p>
       </div>
