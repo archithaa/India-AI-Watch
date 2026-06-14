@@ -176,8 +176,10 @@ def run():
         try:
             feed = feedparser.parse(feed_meta["url"])
         except Exception as e:
-            print(f"  Failed to fetch feed: {e}")
+            print(f"  ERROR: Failed to fetch feed: {e}")
             continue
+
+        print(f"  {len(feed.entries)} articles found in feed")
 
         for entry in feed.entries:
             title = entry.get("title", "")
@@ -191,8 +193,11 @@ def run():
                 skipped_irrelevant += 1
                 continue
 
+            print(f"  RELEVANT: {title[:80]}")
+
             if already_exists(db, url):
                 skipped_duplicate += 1
+                print(f"    → duplicate, skipped")
                 continue
 
             # Try Groq first, fall back to keyword
@@ -201,9 +206,11 @@ def run():
                 promise_id = match_promise_keyword(promises, title, summary)
 
             if not promise_id:
-                # Still log it as an unmatched article for manual review
-                print(f"  No promise match: {title[:70]}")
+                print(f"    → no promise match, skipped")
                 continue
+
+            matched = next((p for p in promises if p["id"] == promise_id), None)
+            print(f"    → matched: {matched['text'][:60] if matched else promise_id}…")
 
             found_at = parse_date(entry)
 
@@ -217,7 +224,7 @@ def run():
             }).execute()
 
             inserted += 1
-            print(f"  ✓ {title[:70]}")
+            print(f"    → INSERTED ✓")
 
     print(f"\n{'─' * 50}")
     print(f"Done. {inserted} articles inserted, {skipped_duplicate} duplicates skipped, {skipped_irrelevant} irrelevant.")
