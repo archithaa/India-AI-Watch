@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getAllStates, getGlobalStats, getPromiseCountsByState } from "@/lib/data";
+import { EmailSignup } from "@/components/EmailSignup";
 import type { State } from "@/types";
 
 export default async function HomePage() {
@@ -43,6 +44,10 @@ export default async function HomePage() {
               How we score
             </Link>
           </div>
+        </div>
+        <div className="mt-10 pt-8 border-t border-slate-200 max-w-md">
+          <p className="text-xs text-slate-500 mb-3 font-medium uppercase tracking-wide">Get monthly updates</p>
+          <EmailSignup />
         </div>
       </section>
 

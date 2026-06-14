@@ -1,8 +1,51 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getPromiseBySlug } from "@/lib/data";
 import { StatusBadge } from "@/components/StatusBadge";
 import { CategoryBadge } from "@/components/CategoryBadge";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  try {
+    const promise = await getPromiseBySlug(slug);
+    return {
+      title: `${promise.text.slice(0, 60)}… — India AI Watch`,
+      description: promise.ai_summary ?? `Tracking this Karnataka AI policy promise: ${promise.text.slice(0, 120)}`,
+      openGraph: {
+        title: promise.text.slice(0, 80),
+        description: promise.ai_summary ?? `Status: ${promise.status}. Tracked by India AI Watch.`,
+        url: `https://indiaaiwatch.in/states/ka/promises/${slug}`,
+      },
+    };
+  } catch {
+    return { title: "Promise — India AI Watch" };
+  }
+}
+
+const EVIDENCE_LABELS: Record<string, string> = {
+  delivery: 'Delivered',
+  delay: 'Delay recorded',
+  contradiction: 'Contradiction',
+  budget_allocated: 'Budget allocated',
+  procurement_issued: 'Procurement issued',
+  news_coverage: 'News coverage',
+  rti_finding: 'RTI finding',
+}
+
+const EVIDENCE_STYLE: Record<string, { dot: string; badge: string; icon: string }> = {
+  delivery:            { dot: 'bg-green-500 text-white',  badge: 'bg-green-100 text-green-700',  icon: '✓' },
+  budget_allocated:    { dot: 'bg-blue-500 text-white',   badge: 'bg-blue-100 text-blue-700',    icon: '₹' },
+  procurement_issued:  { dot: 'bg-indigo-500 text-white', badge: 'bg-indigo-100 text-indigo-700',icon: '📋' },
+  delay:               { dot: 'bg-orange-400 text-white', badge: 'bg-orange-100 text-orange-700',icon: '!' },
+  contradiction:       { dot: 'bg-red-500 text-white',    badge: 'bg-red-100 text-red-700',      icon: '✗' },
+  news_coverage:       { dot: 'bg-slate-400 text-white',  badge: 'bg-slate-100 text-slate-600',  icon: '📰' },
+  rti_finding:         { dot: 'bg-purple-500 text-white', badge: 'bg-purple-100 text-purple-700',icon: '📄' },
+}
 
 function formatAmount(amount: number | null) {
   if (!amount) return null;
@@ -48,33 +91,55 @@ export default async function PromiseDetailPage({
         </div>
       )}
 
-      <div className="mt-8 space-y-4">
-        <h2 className="text-sm font-semibold text-slate-700">Evidence</h2>
+      <div className="mt-10">
+        <h2 className="text-sm font-semibold text-slate-700 mb-6">Timeline</h2>
         {!promise.evidence || promise.evidence.length === 0 ? (
           <div className="p-4 bg-white rounded-xl border border-dashed border-slate-300">
             <p className="text-sm text-slate-500">
               No evidence found yet. The absence of evidence is also data.
             </p>
             <p className="text-xs text-slate-400 mt-1">
-              We have filed RTIs for this promise. Response pending.
+              RTI filed. Response pending.
             </p>
           </div>
         ) : (
-          promise.evidence.map((e) => (
-            <div key={e.id} className="p-4 bg-white rounded-xl border border-slate-200">
-              <p className="text-sm text-slate-800">{e.description}</p>
-              {e.source_url && (
-                <a
-                  href={e.source_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-slate-500 underline hover:text-slate-800 mt-1 inline-block"
-                >
-                  Source ↗
-                </a>
-              )}
+          <div className="relative">
+            <div className="absolute left-3 top-0 bottom-0 w-px bg-slate-200" />
+            <div className="space-y-6">
+              {[...promise.evidence]
+                .sort((a, b) => new Date(a.found_at ?? a.created_at).getTime() - new Date(b.found_at ?? b.created_at).getTime())
+                .map((e) => (
+                  <div key={e.id} className="relative pl-10">
+                    <div className={`absolute left-0 top-1 w-6 h-6 rounded-full flex items-center justify-center text-xs ${EVIDENCE_STYLE[e.type]?.dot ?? 'bg-slate-200'}`}>
+                      {EVIDENCE_STYLE[e.type]?.icon ?? '·'}
+                    </div>
+                    <div className="p-4 bg-white rounded-xl border border-slate-200">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${EVIDENCE_STYLE[e.type]?.badge ?? 'bg-slate-100 text-slate-500'}`}>
+                          {EVIDENCE_LABELS[e.type] ?? e.type}
+                        </span>
+                        {e.found_at && (
+                          <span className="text-xs text-slate-400">
+                            {new Date(e.found_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-slate-800 leading-relaxed">{e.description}</p>
+                      {e.source_url && (
+                        <a
+                          href={e.source_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-slate-400 underline hover:text-slate-700 mt-2 inline-block"
+                        >
+                          Source ↗
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ))}
             </div>
-          ))
+          </div>
         )}
       </div>
 

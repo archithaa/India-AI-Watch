@@ -1,10 +1,16 @@
-import { PromiseCard } from "@/components/PromiseCard";
+import type { Metadata } from "next";
+import { PromiseGrid } from "@/components/PromiseGrid";
 import { getStateByCode, getPromisesByState, getRTIsByState } from "@/lib/data";
-import type { PromiseStatus } from "@/types";
 
-const statusOrder: PromiseStatus[] = [
-  "delivered", "in_progress", "delayed", "announced", "abandoned", "unknown",
-];
+export const metadata: Metadata = {
+  title: "Karnataka AI Policy Tracker — India AI Watch",
+  description: "Tracking every AI policy promise made by the Karnataka government — what was announced, what was delivered, and what's overdue.",
+  openGraph: {
+    title: "Karnataka AI Policy Tracker",
+    description: "7 promises tracked. What did the Karnataka government commit to on AI — and what actually happened?",
+    url: "https://indiaaiwatch.in/states/ka",
+  },
+};
 
 export default async function KarnatakaPage() {
   const state = await getStateByCode("KA");
@@ -12,10 +18,6 @@ export default async function KarnatakaPage() {
     getPromisesByState(state.id),
     getRTIsByState(state.id),
   ]);
-
-  const sorted = [...promises].sort(
-    (a, b) => statusOrder.indexOf(a.status) - statusOrder.indexOf(b.status),
-  );
 
   const deliveredCount = promises.filter((p) => p.status === "delivered").length;
   const delayedCount = promises.filter((p) => p.status === "delayed").length;
@@ -72,11 +74,7 @@ export default async function KarnatakaPage() {
         <p className="text-xs text-slate-400">Source: Karnataka AI Policy 2024</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {sorted.map((promise) => (
-          <PromiseCard key={promise.id} promise={promise} stateCode="KA" />
-        ))}
-      </div>
+      <PromiseGrid promises={promises} stateCode="KA" />
 
       {/* RTI section */}
       <div className="mt-16">
