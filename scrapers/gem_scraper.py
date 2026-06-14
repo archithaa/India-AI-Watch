@@ -20,22 +20,18 @@ SUPABASE_KEY = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
 AI_KEYWORDS = ["artificial intelligence", "machine learning", "AI", "deep learning", "NLP", "computer vision"]
 STATE_FILTER = "Karnataka"
 
-GEM_SEARCH_URL = "https://mkp.gem.gov.in/api/v2/search/bids"
+# GeM does not have a public search API.
+# Current approach: download the monthly open data CSV from data.gov.in
+# and filter for Karnataka + AI keywords.
+# Until that is implemented, this scraper is a no-op placeholder.
+GEM_DATA_NOTE = (
+    "GeM does not expose a public search API. "
+    "Procurement data will be added manually via the admin panel "
+    "until the data.gov.in CSV pipeline is implemented."
+)
 
 def fetch_gem_bids(keyword: str) -> list[dict]:
-    params = {
-        "query": keyword,
-        "state": STATE_FILTER,
-        "page": 1,
-        "limit": 50,
-    }
-    try:
-        r = httpx.get(GEM_SEARCH_URL, params=params, timeout=15)
-        r.raise_for_status()
-        return r.json().get("data", [])
-    except Exception as e:
-        print(f"  GeM fetch failed for '{keyword}': {e}")
-        return []
+    return []
 
 def match_promise(db, description: str) -> str | None:
     """Return promise_id if the bid description matches a tracked promise."""
@@ -48,6 +44,10 @@ def match_promise(db, description: str) -> str | None:
     return None
 
 def run():
+    print(GEM_DATA_NOTE)
+    print("Skipping GeM scrape — no-op until data.gov.in CSV pipeline is built.\n")
+    return
+
     db = create_client(SUPABASE_URL, SUPABASE_KEY)
     seen_bid_ids: set[str] = set()
     inserted = 0
