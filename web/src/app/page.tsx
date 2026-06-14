@@ -74,8 +74,6 @@ export default async function HomePage() {
               promiseCount={Object.values(counts).reduce((a, b) => a + b, 0)}
             />
           ))}
-          <ComingSoonCard name="Kerala" note="India's first cabinet-level AI ministry" />
-          <ComingSoonCard name="Maharashtra" note="Largest state AI budget in Western India" />
         </div>
       </section>
 
@@ -126,14 +124,3 @@ function StateCard({ state, promiseCount }: { state: State; promiseCount: number
   );
 }
 
-function ComingSoonCard({ name, note }: { name: string; note: string }) {
-  return (
-    <div className="p-5 bg-slate-50 rounded-xl border border-dashed border-slate-300">
-      <div className="flex items-start justify-between">
-        <p className="font-semibold text-slate-400">{name}</p>
-        <span className="text-xs bg-slate-100 text-slate-400 font-medium px-2 py-0.5 rounded-full">Soon</span>
-      </div>
-      <p className="mt-3 text-xs text-slate-400 leading-relaxed">{note}</p>
-    </div>
-  );
-}
