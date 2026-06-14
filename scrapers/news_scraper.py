@@ -30,9 +30,16 @@ except ImportError:
 
 load_dotenv("web/.env.local")
 
-SUPABASE_URL = os.environ["NEXT_PUBLIC_SUPABASE_URL"]
-SUPABASE_KEY = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
+SUPABASE_URL = os.environ.get("NEXT_PUBLIC_SUPABASE_URL", "")
+SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
+
+if not SUPABASE_URL or not SUPABASE_KEY:
+    raise SystemExit(
+        "ERROR: NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set.\n"
+        "In GitHub Actions: add them under Settings → Secrets → Actions.\n"
+        "Locally: add them to web/.env.local."
+    )
 
 # ─── RSS feeds ────────────────────────────────────────────────────────────────
 RSS_FEEDS = [
