@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import { createServerClient } from '@/lib/supabase-server'
+import { getPendingEvidence } from '@/lib/data'
 import { AdminShell } from './AdminShell'
 
 export default async function AdminPage() {
@@ -12,10 +13,10 @@ export default async function AdminPage() {
   }
 
   const db = createServerClient()
-  const { data: promises } = await db
-    .from('promises')
-    .select('id, slug, text, status, last_verified_at, state_id')
-    .order('created_at')
+  const [{ data: promises }, pendingEvidence] = await Promise.all([
+    db.from('promises').select('id, slug, text, status, last_verified_at').order('created_at'),
+    getPendingEvidence(),
+  ])
 
-  return <AdminShell promises={promises ?? []} />
+  return <AdminShell promises={promises ?? []} pendingEvidence={pendingEvidence} />
 }

@@ -68,6 +68,29 @@ export async function getPromiseCountsByState(
   )
 }
 
+export async function getPendingEvidence(): Promise<
+  Array<{
+    id: string
+    type: string
+    description: string
+    source_url: string | null
+    found_at: string | null
+    created_at: string
+    promise: { id: string; text: string; status: string; slug: string | null }
+  }>
+> {
+  const { data, error } = await getClient()
+    .from('evidence')
+    .select('id, type, description, source_url, found_at, created_at, promises(id, text, status, slug)')
+    .eq('verified_by_human', false)
+    .order('created_at', { ascending: false })
+  if (error) throw new Error(error.message)
+  return (data ?? []).map((row) => ({
+    ...row,
+    promise: (row.promises as unknown as { id: string; text: string; status: string; slug: string | null }),
+  }))
+}
+
 export async function getGlobalStats(): Promise<{
   totalPromises: number
   delivered: number
